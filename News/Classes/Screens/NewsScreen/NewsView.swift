@@ -69,7 +69,7 @@ final class NewsView: View {
 private extension NewsView  {
     enum Constants {
         static let newsCellSize: CGSize = {
-            let ratio: CGFloat = 0.9
+            let ratio: CGFloat = 1
             let width = UIScreen.main.bounds.width - 30
             return CGSize(width: width, height: width  * ratio)
         }()

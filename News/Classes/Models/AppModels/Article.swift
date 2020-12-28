@@ -8,11 +8,12 @@
 import Foundation
 
 struct Article {
-    let source: Source?
     let author: String?
     let title: String?
+    let sourceURL: URL?
     let imageURL: URL?
     let content: String?
+    let date: Date?
 }
 
 extension Article: ConvertableTarget { }

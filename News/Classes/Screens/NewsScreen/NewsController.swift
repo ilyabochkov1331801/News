@@ -19,6 +19,8 @@ final class NewsController: Controller<NewsView> {
         didSet { contentView.reloadNews() }
     }
     
+    var openDetailsTransition: ((Article, String) -> Void)?
+    
     init(newsService: NewsService) {
         self.newsService = newsService
         
@@ -60,7 +62,11 @@ extension NewsController: UISearchBarDelegate {
 }
 
 extension NewsController: UICollectionViewDelegate {
-    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if let article = news?.articles[indexPath.row] {
+            openDetailsTransition?(article, newsSearchBarController.searchBar.placeholder ?? "News")
+        }
+    }
 }
 
 extension NewsController: UICollectionViewDataSource {
@@ -74,7 +80,8 @@ extension NewsController: UICollectionViewDataSource {
         }
         
         cell.title = news?.articles[indexPath.row].title
-        cell.imageURL = news?.articles[indexPath.row].imageURL
+        cell.previewImageURL = news?.articles[indexPath.row].imageURL
+        cell.date = news?.articles[indexPath.row].date
         return cell
     }
 }

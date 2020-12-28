@@ -4,6 +4,7 @@ target 'News' do
   use_frameworks!
   
   pod 'SnapKit'
+  pod 'Kingfisher' 
 
   target 'NewsTests' do
     inherit! :search_paths

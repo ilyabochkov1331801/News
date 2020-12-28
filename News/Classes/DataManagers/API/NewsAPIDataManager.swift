@@ -19,7 +19,7 @@ final class NewsAPIDataManager {
             wrappedCompletion(.failure(NetworkError.buildRequestError(from: endpoint.path)))
             return
         }
-        
+                
         session.dataTask(with: request) { data, response, error in
             
             let decodeDataClosure: (Data) -> Void = {

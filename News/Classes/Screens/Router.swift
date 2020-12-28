@@ -25,6 +25,25 @@ final class Router {
     
     func showNewsScreen() {
         let screen = ScreensAssembly.makeNewsScreen(injector: self)
+        
+        screen.openDetailsTransition = { [weak self] in
+            self?.showDetailsScreen(with: $0, title: $1)
+        }
+        
+        navigationController.pushViewController(screen, animated: true)
+    }
+    
+    func showDetailsScreen(with article: Article, title: String) {
+        let screen = ScreensAssembly.makeDetailsScreen(article: article, title: title)
+        
+        screen.openLink = {
+            UIApplication.shared.openLinkIfCan($0)
+        }
+        
+        screen.closeTransition = { [weak self] in
+            self?.navigationController.popViewController(animated: true)
+        }
+        
         navigationController.pushViewController(screen, animated: true)
     }
 }

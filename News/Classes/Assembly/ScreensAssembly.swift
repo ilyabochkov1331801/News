@@ -11,4 +11,8 @@ final class ScreensAssembly {
     static func makeNewsScreen(injector: DependencyInjector) -> NewsController {
         NewsController(newsService: ServicesAssembly.makeNewsService(injector: injector))
     }
+    
+    static func makeDetailsScreen(article: Article, title: String) -> DetailsController {
+        DetailsController(article: article, title: title)
+    }
 }

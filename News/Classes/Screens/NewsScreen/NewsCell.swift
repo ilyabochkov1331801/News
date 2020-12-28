@@ -6,18 +6,31 @@
 //
 
 import UIKit
+import Kingfisher
 
 final class NewsCell: UICollectionViewCell {
     private let titleLabel: UILabel = {
         let label = UILabel()
+        label.textColor = .white
+        label.font = .boldSystemFont(ofSize: 20)
         label.numberOfLines = 0
         return label
     }()
     
-    private let imageView: UIImageView = {
+    private let previewImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.contentMode = .scaleToFill
+        imageView.contentMode = .scaleAspectFill
+        imageView.kf.indicatorType = .activity
+        imageView.alpha = 0.5
         return imageView
+    }()
+    
+    private let dateLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .white
+        label.font = .boldSystemFont(ofSize: 25)
+        label.textAlignment = .right
+        return label
     }()
     
     var title: String? {
@@ -25,10 +38,22 @@ final class NewsCell: UICollectionViewCell {
         set { titleLabel.text = newValue }
     }
     
-    var imageURL: URL? {
+    var previewImageURL: URL? {
         didSet {
-            if let url = imageURL {
-                imageView.setContent(of: url)
+            if let url = previewImageURL {
+                previewImageView.kf.setImage(with: url,
+                                             placeholder: UIImage(named: "imagePlaceholder"),
+                                             options: [.processor(BlurImageProcessor(blurRadius: 5))])
+            } else {
+                previewImageView.image = UIImage(named: "imagePlaceholder")
+            }
+        }
+    }
+    
+    var date: Date? {
+        didSet {
+            if let date = date {
+                dateLabel.text = DateFormatters.viewDateFormatter.string(from: date)
             }
         }
     }
@@ -42,6 +67,12 @@ final class NewsCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        previewImageView.kf.cancelDownloadTask()
+    }
 }
 
 private extension NewsCell {
@@ -51,8 +82,8 @@ private extension NewsCell {
     }
     
     func arrangeView() {
-        contentView.addSubview(imageView)
-        imageView.snp.makeConstraints {
+        contentView.addSubview(previewImageView)
+        previewImageView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
         
@@ -60,11 +91,16 @@ private extension NewsCell {
         titleLabel.snp.makeConstraints {
             $0.leading.top.trailing.equalToSuperview().inset(20)
         }
+        
+        contentView.addSubview(dateLabel)
+        dateLabel.snp.makeConstraints {
+            $0.trailing.bottom.equalToSuperview().inset(20)
+        }
     }
     
     func setupView() {
         contentView.layer.cornerRadius = 30
         contentView.layer.masksToBounds = true
-        contentView.backgroundColor = .blue
+        contentView.backgroundColor = .gray
     }
 }
