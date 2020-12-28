@@ -8,7 +8,7 @@
 import Foundation
 
 final class ServiceError: AppError {
-    static func newsError(error: Error) -> Self {
-        Self(description: "News service error", underlying: error)
+    static func newsError(error: Error) -> ServiceError {
+        ServiceError(description: "Somesthing with getting news", underlying: error)
     }
 }

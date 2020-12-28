@@ -8,7 +8,11 @@
 import Foundation
 
 final class DataManagerError: AppError {
-    static func newsAPIError(error: Error) -> Self {
-        Self(description: "News api data manager error", underlying: error)
+    static func newsAPIError(error: Error) -> DataManagerError {
+        DataManagerError(description: "Something with loading news", underlying: error)
+    }
+    
+    static func imageDownloaderError(error: Error) -> DataManagerError {
+        DataManagerError(description: "Something with loading images", underlying: error)
     }
 }

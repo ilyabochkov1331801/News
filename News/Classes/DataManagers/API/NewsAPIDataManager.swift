@@ -13,44 +13,49 @@ final class NewsAPIDataManager {
     func executeRequest<Response>(with endpoint: NewsAPIEndpoint<Response>,
                                   completion: @escaping (Result<Response.Target, DataManagerError>) -> Void) {
         
-        let wrapErrorClosure: (APIError) -> DataManagerError = {
-            .newsAPIError(error: $0)
-        }
+        let wrappedCompletion = wrapCompletion(completion: completion)
         
         guard let request = endpoint.asRequest() else {
-            completion(.failure(wrapErrorClosure(.buildRequestError(from: endpoint.path))))
+            wrappedCompletion(.failure(NetworkError.buildRequestError(from: endpoint.path)))
             return
         }
         
         session.dataTask(with: request) { data, response, error in
-            if let error = error {
-                completion(.failure(wrapErrorClosure(.taskError(error: error))))
-                return
+            
+            let decodeDataClosure: (Data) -> Void = {
+                do {
+                    let appResponse = try JSONDecoder().decode(Response.self, from: $0)
+                    wrappedCompletion(.success(appResponse.convert()))
+                } catch {
+                    wrappedCompletion(.failure(NetworkError.decodeError(from: endpoint.path,
+                                                                        type: String(describing: Response.self),
+                                                                        error: error)))
+                }
             }
             
-            guard let code = (response as? HTTPURLResponse)?.statusCode else {
-                completion(.failure(wrapErrorClosure(.invalidResponse(with: nil))))
-                return
-            }
-            
-            guard (200..<300).contains(code) else {
-                completion(.failure(wrapErrorClosure(.invalidResponse(with: code))))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(wrapErrorClosure(.noData(from: endpoint.path))))
-                return
-            }
-            
-            do {
-                let appResponse = try JSONDecoder().decode(Response.self, from: data)
-                completion(.success(appResponse.convert()))
-            } catch {
-                completion(.failure(wrapErrorClosure(.decodeError(from: endpoint.path,
-                                                                  type: String(describing: Response.self),
-                                                                  error: error))))
+            switch URLSession.validate(data, response, error) {
+            case .success(let data):
+                decodeDataClosure(data)
+            case .failure(let error):
+                wrappedCompletion(.failure(error))
             }
         }.resume()
+    }
+}
+
+extension NewsAPIDataManager: Resolvable { }
+
+private extension NewsAPIDataManager {
+    func wrapCompletion<Response>(completion: @escaping (Result<Response, DataManagerError>) -> Void) -> (Result<Response, AppError>) -> Void {
+        return { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    completion(.success(response))
+                case .failure(let error):
+                    completion(.failure(.newsAPIError(error: error)))
+                }
+            }
+        }
     }
 }

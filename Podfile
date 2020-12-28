@@ -2,6 +2,8 @@ platform :ios, '11.0'
 
 target 'News' do
   use_frameworks!
+  
+  pod 'SnapKit'
 
   target 'NewsTests' do
     inherit! :search_paths
